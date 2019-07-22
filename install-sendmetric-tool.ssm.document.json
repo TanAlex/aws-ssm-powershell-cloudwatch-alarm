@@ -1,0 +1,52 @@
+{
+    "Type" : "AWS::SSM::Document",
+    "Properties" : {
+        "DocumentType" : "Command",
+        "Content" : {
+            "schemaVersion":"2.2",
+            "description":"Setup SendMetrics Tool and its cronjob(Scheduled Task)",
+            "parameters":{
+               "Salutation":{
+                  "type":"String",
+                  "description":"(Optional) This is an optional parameter that will be displayed in the output of the command if specified.",
+                  "allowedPattern":"[a-zA-Z]",
+                  "default":"World"
+               }
+            },
+            "mainSteps":[
+                {
+                    "action":"aws:downloadContent",
+                    "name":"downloadContent",
+                    "inputs":{
+                        "sourceType":"GitHub",
+                        "sourceInfo":{
+                            "owner":"TanAlex", 
+                            "repository":"aws-ssm-powershell-cloudwatch-alarm", 
+                            "path": "SendMetrics.ps1",
+                            "getOptions" : "branch:master"
+                        },
+                        "destinationPath":"c:\\OnicaTools\\SendMetrics.ps1"
+                    }
+                },
+                {
+                    "action":"aws:runPowerShellScript",
+                    "name":"DisplaySalutation",
+                    "inputs":{
+                        "timeoutSeconds":60,
+                        "runCommand":[
+                        "$salutation = '{{ Salutation }}'",
+                        "",
+                        "if ( [String]::IsNullOrWhitespace( $salutation ) )",
+                        "{",
+                        "  $salutation = 'anonymous'",
+                        "}",
+                        "",
+                        "Write-Host ('Hello {0}' -f $salutation)"
+                        ]
+                    }
+                }
+            ]
+         }
+      }
+  }
+
