@@ -6,5 +6,5 @@ aws ssm create-document --content file://install-sendmetric-tool.ssm.document.js
 Or just Run send-command command
 ```bash
 INSTANCE_ID="i-07abc1ba2742d9c1a"
-aws ssm send-command --document-name "AWS-RunRemoteScript" --instance-ids "$INSTANCE_ID" --parameters '{"sourceType":["GitHub"],"sourceInfo":["{\"owner\":\"TanAlex\", \"repository\":\"aws-ssm-powershell-cloudwatch-alarm\", \"path\": \"c:\\OnicaTools"}"],"commandLine":["powershell Add-ScheduleTask.ps1"]}' --region us-west-02
+aws ssm send-command --document-name "AWS-RunRemoteScript" --instance-ids "$INSTANCE_ID" --parameters '{"sourceType":["GitHub"],"sourceInfo":["{\"owner\":\"TanAlex\", \"repository\":\"aws-ssm-powershell-cloudwatch-alarm\", \"path\": \"Add-ScheduleTask.ps1\"}"],"commandLine":["powershell Add-ScheduleTask.ps1"]}' --region us-west-2
 ```
