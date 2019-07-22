@@ -8,4 +8,4 @@ $Action= New-ScheduledTaskAction -Execute "PowerShell.exe" `
     -Argument "C:\OnicaTools\SendMetrics.ps1" 
 # Specify what program to run and with its parameters
 Register-ScheduledTask -TaskName "SendMetricsCronJob" -Trigger $Trigger `
-    -User $User -Action $Action -RunLevel Highest –Force
+    -User $User -Action $Action -RunLevel Highest -Force
