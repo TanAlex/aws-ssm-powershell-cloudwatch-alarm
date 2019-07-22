@@ -1,52 +1,45 @@
 {
-    "Type" : "AWS::SSM::Document",
-    "Properties" : {
-        "DocumentType" : "Command",
-        "Content" : {
-            "schemaVersion":"2.2",
-            "description":"Setup SendMetrics Tool and its cronjob(Scheduled Task)",
-            "parameters":{
-               "Salutation":{
-                  "type":"String",
-                  "description":"(Optional) This is an optional parameter that will be displayed in the output of the command if specified.",
-                  "allowedPattern":"[a-zA-Z]",
-                  "default":"World"
-               }
-            },
-            "mainSteps":[
-                {
-                    "action":"aws:downloadContent",
-                    "name":"downloadContent",
-                    "inputs":{
-                        "sourceType":"GitHub",
-                        "sourceInfo":{
-                            "owner":"TanAlex", 
-                            "repository":"aws-ssm-powershell-cloudwatch-alarm", 
-                            "path": "SendMetrics.ps1",
-                            "getOptions" : "branch:master"
-                        },
-                        "destinationPath":"c:\\OnicaTools\\SendMetrics.ps1"
-                    }
-                },
-                {
-                    "action":"aws:runPowerShellScript",
-                    "name":"DisplaySalutation",
-                    "inputs":{
-                        "timeoutSeconds":60,
-                        "runCommand":[
-                        "$salutation = '{{ Salutation }}'",
-                        "",
-                        "if ( [String]::IsNullOrWhitespace( $salutation ) )",
-                        "{",
-                        "  $salutation = 'anonymous'",
-                        "}",
-                        "",
-                        "Write-Host ('Hello {0}' -f $salutation)"
-                        ]
-                    }
-                }
-            ]
-         }
-      }
-  }
+    "schemaVersion":"2.2",
+    "description":"Setup SendMetrics Tool and its cronjob(Scheduled Task)",
+    "parameters":{
+        "TaskName":{
+            "type":"String",
+            "description":"(Optional) This is an optional parameter that will be displayed in the output of the command if specified.",
+            "allowedPattern":"[a-zA-Z]",
+            "default":"SendMetricsCronJob"
+        }
+    },
+    "mainSteps":[
+        {
+            "action":"aws:downloadContent",
+            "name":"downloadContent",
+            "inputs":{
+                "sourceType":"GitHub",
+                "sourceInfo":"{\"owner\":\"TanAlex\",\"repository\":\"aws-ssm-powershell-cloudwatch-alarm\", \"path\": \"SendMetrics.ps1\",\"getOptions\" : \"branch:master\"}",
+                "destinationPath": "C:\\OnicaTools\\SendMetrics.ps1"
+            }
+        },
+        {
+            "action":"aws:runPowerShellScript",
+            "name":"InstallSendMetricCronJob",
+            "inputs":{
+                "timeoutSeconds":60,
+                "runCommand":[
+                    "$Trigger= New-ScheduledTaskTrigger `",
+                    "    -Once `",
+                    "    -At (Get-Date).AddMinutes(1) `",
+                    "    -RepetitionInterval (New-TimeSpan -Minutes 5) `",
+                    "    -RepetitionDuration ([System.TimeSpan]::MaxValue)",
+                    "$User= \"NT AUTHORITY\\SYSTEM\" # Specify the account to run the script",
+                    "$Action= New-ScheduledTaskAction -Execute \"PowerShell.exe\" `",
+                    "    -Argument \"C:\\OnicaTools\\SendMetrics.ps1\" ",
+                    "# Specify what program to run and with its parameters",
+                    "Register-ScheduledTask -TaskName \"SendMetricsCronJob\" -Trigger $Trigger `",
+                    "    -User $User -Action $Action -RunLevel Highest -Force"
+                    ]
+            }
+        }
+    ]
+}
+
 
